@@ -1,0 +1,28 @@
+yum 配置自定义源
+1、创建一个文件夹
+2、拷贝 rpm 包到文件夹
+3、createrepo,创建包列表索引
+
+yum 客户端
+baseurl配置的地址路径是repodata所在的路径
+
+时间同步服务器
+chrony
+
+chronyc sources -v  查看时间是否同步成功
+gatewas ibursh
+allow 0/0
+
+阿里云时间服务器地址：
+ntp.aliyun.com
+
+真机配置时间同步阿里云的服务器
+
+vim /etc/chrony.conf
+
+server ntp.aliyun.com iburst
+allow 0/0  (第一个0是任意地址，第2个0是任意子网掩码)
+local stratum 10 (服务器的层级，需要在15层以内)
+
+
+
