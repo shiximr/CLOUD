@@ -25,4 +25,70 @@ allow 0/0  (第一个0是任意地址，第2个0是任意子网掩码)
 local stratum 10 (服务器的层级，需要在15层以内)
 
 
+QQ 群： 172309459
+
+<network>
+  <name>vbr</name>   #虚拟交换机的名称virsh net-list 看到的名字
+  <forward mode='nat'/> #虚拟交换机支持地址伪装模式
+  <bridge name='vbr' stp='on' delay='0'/>  #交换机属性配置 开启stp生成树，ifconfig 看到的名字
+  <ip address='192.168.1.254' netmask='255.255.255.0'> #默认路由IP地址和子网掩码
+    <dhcp>
+      <range start='192.168.1.100' end='192.168.1.200'/>  #dhcp配置IP地址
+    </dhcp>
+  </ip>
+</network>
+
+
+
+
+<domain type='kvm'>  ＃域定义的开头
+  <name>node</name>  ＃虚拟机的名称，virsh list 看到的名称
+  <memory unit='KB'>2097152</memory>   ＃虚拟机可以使用的最大内存
+  <currentMemory unit='KB'>2097152</currentMemory>  ＃虚拟机的独立内存，不会被共享
+  <vcpu placement='static'>2</vcpu>   ＃虚拟几颗CPU
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>  ＃系统特征
+    <boot dev='hd'/>     ＃默认启动设备是hd硬盘
+    <bootmenu enable='yes'/>  ＃引导菜单
+    <bios useserial='yes'/>   ＃使用bios串口，为virsh console 提供支持
+  </os>
+  <features>  ＃电源管理
+    <acpi/>   
+    <apic/>
+  </features> ＃电源管理
+  <cpu mode='host-passthrough'></cpu>  ＃CPU虚拟化技术，使用与主机一样的cpu
+  <clock offset='localtime'/>          ＃时钟使用真机的时间
+  <on_poweroff>destroy</on_poweroff>   ＃图形界面poweroff按钮 时触发的命令
+  <on_reboot>restart</on_reboot>       ＃图形界面reboot按钮 时触发的命令
+  <on_crash>restart</on_crash>         ＃图形界面restart按钮 时触发的命令
+  <devices>    ＃定义硬件系统设备
+    <emulator>/usr/libexec/qemu-kvm</emulator>  ＃定义硬件仿真软件
+    <disk type='file' device='disk'>            ＃定义硬盘
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/node.img'/>  ＃定义硬盘的文件路径
+      <target dev='vda' bus='virtio'/>  ＃进入系统里面显示的磁盘设备的名称
+    </disk>
+    <interface type='bridge'>  ＃定义网卡
+      <source bridge='vbr'/>   ＃连接到那一个交换机
+      <model type='virtio'/>
+    </interface>
+    <channel type='unix'>   ＃libvirt对虚拟机管理的驱动，对应虚拟机的进程
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+    </channel>
+    <serial type='pty'></serial>  ＃定义串口的终端
+    <console type='pty'>       ＃定义串口终端的驱动
+      <target type='serial'/>  ＃定义串口终端的驱动
+    </console>                 ＃定义串口终端的驱动
+    <memballoon model='virtio'></memballoon> ＃内存气泡使用的驱动
+  </devices>
+</domain>
+
+
+
+
+克隆新虚拟机必须要修改的两个地方：
+1、虚拟机的名称
+2、磁盘的路径
+
+virsh define + 虚拟机名称 增加一些辅助信息
 
